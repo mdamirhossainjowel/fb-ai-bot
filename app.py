@@ -1,17 +1,20 @@
 from flask import Flask, request
 import requests
+import os
 
 app = Flask(__name__)
 
 PAGE_ACCESS_TOKEN = "EAAS6XvwLccsBR2pxIo0YQy37PTWxgclhUZADSHU8oTgRbaWfNZBnGlrugCgPtWWPR6PObC45lD1sUIZAunKtB49zEkSmzpjqAJiF9uLFywkwABTwx3HqJ0gBVUhUkoQuVRbFMZC0QZA9oz52fMRAOMsU4Pj8pFcFsgFVkVWHZCzYZBeIymHWmv97HBXtWgK6s8nTRm71wZDZD"
-
 VERIFY_TOKEN = "my_verify_token"
 
 
 @app.route("/", methods=["GET"])
 def verify():
-    if request.args.get("hub.verify_token") == VERIFY_TOKEN:
-        return request.args.get("hub.challenge")
+    token = request.args.get("hub.verify_token")
+    challenge = request.args.get("hub.challenge")
+
+    if token == VERIFY_TOKEN:
+        return challenge
     return "Verification failed"
 
 
@@ -26,7 +29,6 @@ def webhook():
                 text = msg["message"].get("text")
 
                 reply = f"You said: {text}"
-
                 send_message(sender, reply)
 
     return "ok"
@@ -44,4 +46,5 @@ def send_message(recipient_id, text):
 
 
 if __name__ == "__main__":
-    app.run(port=5000)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
